@@ -50,4 +50,4 @@ npm run build
 
 ## Live site
 
-LIVE_URL_HERE
+https://md-fariz-uddin-rabbu-20223656665.vercel.app/
