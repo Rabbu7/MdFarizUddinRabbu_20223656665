@@ -7,7 +7,9 @@ export default function MatchSelect({ requirement }) {
   const t = useT()
   const duplicateHashes = useMemo(() => {
     const counts = new Map()
-    state.files.forEach((file) => counts.set(file.hash, (counts.get(file.hash) ?? 0) + 1))
+    state.files.forEach((file) => {
+      if (file.hash) counts.set(file.hash, (counts.get(file.hash) ?? 0) + 1)
+    })
     return counts
   }, [state.files])
   const currentFileId = state.matches[requirement.id] ?? ''
@@ -34,7 +36,7 @@ export default function MatchSelect({ requirement }) {
         <option value="">{t('match.noFile')}</option>
         {state.files.map((file) => {
           const usedBy = matchedRequirementFor(file.id)
-          const duplicateUsed = duplicateHashes.get(file.hash) > 1 && state.files.some(
+          const duplicateUsed = Boolean(file.hash) && duplicateHashes.get(file.hash) > 1 && state.files.some(
             (candidate) => candidate.id !== file.id && candidate.hash === file.hash && matchedRequirementFor(candidate.id),
           )
           const disabled = Boolean(usedBy || (duplicateUsed && file.id !== currentFileId))

@@ -3,12 +3,18 @@ import { useAppContext } from '../context/AppContext'
 import { useT } from '../i18n/useT'
 import en from '../i18n/en'
 import bn from '../i18n/bn'
+import { isDateString } from '../lib/dates'
 
 const requiredFields = ['id', 'order', 'title_en', 'title_bn', 'mandatory', 'has_expiry']
 
 function validateRequirementsFile(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'err.jsonNotObject'
   if (!value.tender || typeof value.tender !== 'object' || Array.isArray(value.tender)) return 'err.missingTender'
+  const tenderFields = ['tender_id', 'title', 'procuring_entity', 'bidder', 'submission_deadline']
+  if (
+    tenderFields.some((field) => typeof value.tender[field] !== 'string' || !value.tender[field].trim()) ||
+    !isDateString(value.tender.submission_deadline)
+  ) return 'err.invalidTender'
   if (!Array.isArray(value.requirements) || value.requirements.length === 0) return 'err.emptyRequirements'
   const invalidIndex = value.requirements.findIndex(
     (requirement) =>

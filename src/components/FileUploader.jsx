@@ -26,35 +26,42 @@ export default function FileUploader() {
     let count = state.files.length
     let bytes = totalBytes
 
-    for (const file of incoming) {
-      if (count >= MAX_FILES) {
-        rejected.push({ name: file.name, reason: 'limitCount' })
-        continue
+    try {
+      for (const file of incoming) {
+        if (count >= MAX_FILES) {
+          rejected.push({ name: file.name, reason: 'limitCount' })
+          continue
+        }
+        if (bytes + file.size > MAX_BYTES) {
+          rejected.push({ name: file.name, reason: 'limitSize' })
+          continue
+        }
+        try {
+          const info = await readPdfInfo(file)
+          if (!info.ok) {
+            rejected.push({ name: file.name, reason: info.reason })
+            continue
+          }
+          accepted.push({
+            id: crypto.randomUUID(),
+            name: file.name,
+            size: file.size,
+            pages: info.pages,
+            hash: await hashBytes(info.bytes),
+            bytes: info.bytes,
+          })
+          count += 1
+          bytes += file.size
+        } catch {
+          rejected.push({ name: file.name, reason: 'processing' })
+        }
       }
-      if (bytes + file.size > MAX_BYTES) {
-        rejected.push({ name: file.name, reason: 'limitSize' })
-        continue
-      }
-      const info = await readPdfInfo(file)
-      if (!info.ok) {
-        rejected.push({ name: file.name, reason: info.reason })
-        continue
-      }
-      accepted.push({
-        id: crypto.randomUUID(),
-        name: file.name,
-        size: file.size,
-        pages: info.pages,
-        hash: await hashBytes(info.bytes),
-        bytes: info.bytes,
-      })
-      count += 1
-      bytes += file.size
-    }
 
-    if (accepted.length) dispatch({ type: 'ADD_FILES', files: accepted })
-    if (rejected.length) setAlerts((current) => [...current, ...rejected])
-    setProcessing(false)
+      if (accepted.length) dispatch({ type: 'ADD_FILES', files: accepted })
+      if (rejected.length) setAlerts((current) => [...current, ...rejected])
+    } finally {
+      setProcessing(false)
+    }
   }
 
   return (
