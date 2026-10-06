@@ -1,0 +1,7 @@
+node_modules
+dist
+sample-pack
+.kilo
+.agents
+skills-lock.json
+.DS_Store
