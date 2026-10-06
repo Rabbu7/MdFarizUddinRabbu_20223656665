@@ -9,6 +9,8 @@ import TenderInfo from './components/TenderInfo'
 import RequirementsList from './components/RequirementsList'
 import FileUploader from './components/FileUploader'
 import FileList from './components/FileList'
+import SummaryBar from './components/SummaryBar'
+import GeneratePanel from './components/GeneratePanel'
 
 function Workspace() {
   const { state } = useAppContext()
@@ -36,6 +38,12 @@ function Workspace() {
             <FileList />
           </div>
         </div>
+        {state.tender && (
+          <div className="mt-6 grid gap-6">
+            <SummaryBar />
+            <GeneratePanel />
+          </div>
+        )}
       </div>
       <Toast />
     </main>

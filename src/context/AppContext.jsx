@@ -41,8 +41,24 @@ function reducer(state, action) {
       }
     }
     case 'SET_MATCH': {
+      if (action.fileId) {
+        const selectedFile = state.files.find((file) => file.id === action.fileId)
+        if (!selectedFile) return state
+        const otherMatches = Object.entries(state.matches).filter(
+          ([requirementId]) => requirementId !== action.requirementId,
+        )
+        const usedByOther = otherMatches.find(([, fileId]) => fileId === action.fileId)
+        if (usedByOther) return state
+        const duplicateUsedElsewhere = selectedFile.hash && otherMatches.some(([, fileId]) => {
+          const matchedFile = state.files.find((file) => file.id === fileId)
+          return matchedFile?.hash && matchedFile.hash === selectedFile.hash
+        })
+        if (duplicateUsedElsewhere) return state
+      }
       const matches = Object.fromEntries(
-        Object.entries(state.matches).filter(([, fileId]) => fileId !== action.fileId),
+        Object.entries(state.matches).filter(([requirementId, fileId]) =>
+          requirementId !== action.requirementId && fileId !== action.fileId,
+        ),
       )
       return {
         ...state,
